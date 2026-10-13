@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Model viewer</title>
+<style>
+  html, body { margin:0; height:100%; overflow:hidden; background:#101310; }
+  #msg { position:fixed; top:12px; left:12px; color:#ccc; font:14px system-ui, sans-serif; }
+  #back { position:fixed; top:12px; right:12px; color:#c9d86b; font:14px system-ui, sans-serif; }
+</style>
+<div id="msg">Loading model…</div>
+<a id="back" href="/">Back to surveys</a>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+const id = new URLSearchParams(location.search).get("id");
+const msg = document.getElementById("msg");
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(devicePixelRatio);
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x101310);
+const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.01, 10000);
+scene.add(camera);
+
+// Headlamp: a directional light that travels with the camera, so lighting is independent of model scale.
+const lamp = new THREE.DirectionalLight(0xffffff, 3);
+lamp.position.set(0, 0, 0);
+lamp.target.position.set(0, 0, -1);
+camera.add(lamp, lamp.target);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x333333, 0.6));
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+new GLTFLoader().load(`/api/surveys/${encodeURIComponent(id)}/model.glb`, (gltf) => {
+  scene.add(gltf.scene);
+  const box = new THREE.Box3().setFromObject(gltf.scene);
+  const centre = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3()).length();
+  controls.target.copy(centre);
+  camera.position.copy(centre).add(new THREE.Vector3(0, 0, size * 0.6));
+  camera.near = size / 1000; camera.far = size * 10; camera.updateProjectionMatrix();
+  controls.update();
+  msg.remove();
+}, (e) => {
+  if (e.total) msg.textContent = `Loading model… ${(100 * e.loaded / e.total).toFixed(0)}%`;
+}, () => { msg.textContent = "Could not load this model. It may not be ready yet."; });
+
+addEventListener("resize", () => {
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
+</script>
+</html>

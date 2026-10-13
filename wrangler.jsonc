@@ -1,0 +1,13 @@
+{
+  "name": "frogcore",
+  "main": "src/entry.py",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["python_workers"],
+  "assets": { "directory": "./public", "run_worker_first": ["/api/*"] },
+  "r2_buckets": [{ "binding": "footage_bucket", "bucket_name": "footage" }],
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "frogcore",
+    "database_id": "7454fc7b-3960-4e90-afe0-f4f3717d6c24"
+  }]
+}

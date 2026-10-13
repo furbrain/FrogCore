@@ -4,6 +4,7 @@ import time
 from typing import Any
 
 from js import JSON
+from pyodide.ffi import JsProxy
 
 try:  # newer Pyodide represents JS null as `jsnull` rather than None
     from pyodide.ffi import jsnull
@@ -23,8 +24,13 @@ def is_null(value: Any) -> bool:
 
 
 def to_py(value: Any) -> Any:
-    """Convert a JS value to plain Python via JSON (robust across Pyodide versions)."""
-    return json.loads(JSON.stringify(value))
+    """Convert a JS value to plain Python via JSON (robust across Pyodide versions).
+
+    The Workers SDK may already have converted binding results to Python, which pass through as is.
+    """
+    if isinstance(value, JsProxy):
+        return json.loads(JSON.stringify(value))
+    return value
 
 
 class Database:

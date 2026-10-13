@@ -1,2 +1,8 @@
 .vscode/
 .wrangler/
+.venv/
+.venv-workers/
+python_modules/
+.dev.vars
+pylock.toml
+uv.lock

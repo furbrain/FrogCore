@@ -1,14 +1,14 @@
 # FrogCore
 
-Python Worker (Cloudflare) + D1 + R2 (`footage_bucket` binding -> bucket `footage`) with a Modal build job.
+FastAPI on a Python Worker (Cloudflare) + D1 + R2 (`footage_bucket` binding -> bucket `footage`) with a Modal build job.
 
 - Users sign up at `/`, then use the same credentials from Cyclops (`client/frogcore_client.py`).
 - Uploads go to `users/<uid>/<survey>/raw/...`; Modal writes `users/<uid>/<survey>/model.glb`.
 - `/viewer.html?id=<survey>` shows the GLB with three.js (browser JavaScript).
 
 ## Layout
-`src/entry.py` -> `app.py` (routes), `router.py`, `security.py`, `store.py` (D1 repositories).
-No third-party Python packages, so `npx wrangler deploy` is enough.
+`src/entry.py` -> `app.py` (FastAPI routes), `uploads.py` (streaming upload), `services.py`, `security.py`, `store.py` (D1 repositories).
+Dependencies live in `pyproject.toml`; use `uv run pywrangler dev` / `uv run pywrangler deploy`.
 
 ## Worker secrets
 `MODAL_URL`, `MODAL_KEY`, `MODAL_SECRET`, `CALLBACK_SECRET`.
